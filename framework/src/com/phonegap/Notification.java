@@ -12,6 +12,7 @@ import org.json.JSONException;
 import com.phonegap.api.Plugin;
 import com.phonegap.api.PhonegapActivity;
 import com.phonegap.api.PluginResult;
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -213,49 +214,52 @@ public class Notification extends Plugin {
 		final Notification notification = this;
 		final String[] fButtons = buttonLabels.split(",");
 
-		Runnable runnable = new Runnable() {
+		final AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
+		dlg.setMessage(message);
+		dlg.setTitle(title);
+		dlg.setCancelable(false);
+
+		// First button
+		if (fButtons.length > 0) {
+			dlg.setPositiveButton(fButtons[0],
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 1), callbackId);
+				}
+			});
+		}
+
+		// Second button
+		if (fButtons.length > 1) {
+			dlg.setNeutralButton(fButtons[1], 
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 2), callbackId);
+				}
+			});
+		}
+
+		// Third button
+		if (fButtons.length > 2) {
+			dlg.setNegativeButton(fButtons[2],
+					new AlertDialog.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+					notification.success(new PluginResult(PluginResult.Status.OK, 3), callbackId);
+				}
+			}
+			);
+		}
+
+		dlg.create();
+		Runnable runnable = new Runnable() {	
 			public void run() {
-				AlertDialog.Builder dlg = new AlertDialog.Builder(ctx);
-				dlg.setMessage(message);
-				dlg.setTitle(title);
-				dlg.setCancelable(false);
-
-				// First button
-				if (fButtons.length > 0) {
-					dlg.setPositiveButton(fButtons[0],
-							new AlertDialog.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-							notification.success(new PluginResult(PluginResult.Status.OK, 1), callbackId);
-						}
-					});
+				try {
+					dlg.show();
+				} catch (Exception e) {
 				}
-
-				// Second button
-				if (fButtons.length > 1) {
-					dlg.setNeutralButton(fButtons[1], 
-							new AlertDialog.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-							notification.success(new PluginResult(PluginResult.Status.OK, 2), callbackId);
-						}
-					});
-				}
-
-				// Third button
-				if (fButtons.length > 2) {
-					dlg.setNegativeButton(fButtons[2],
-							new AlertDialog.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-							notification.success(new PluginResult(PluginResult.Status.OK, 3), callbackId);
-						}
-					}
-					);
-				}
-
-				dlg.create();
-				dlg.show();
 			};
 		};
 		this.ctx.runOnUiThread(runnable);
